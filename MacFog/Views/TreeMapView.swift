@@ -7,8 +7,7 @@
 
 import SwiftUI
 
-// Import StorageModels for StorageCategoryData
-@_exported import class Foundation.ByteCountFormatter
+// TreeMapView implementation
 
 @available(macOS 11.0, *)
 
@@ -24,6 +23,12 @@ struct TreeMapView: View {
             let layout = TreeMapLayout(size: geometry.size, data: data)
             
             ZStack(alignment: .topLeading) {
+                // Liquid Glass Container Background
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 10)
+                
                 ForEach(data.indices, id: \.self) { index in
                     let rect = layout.rectFor(index: index)
                     
@@ -37,14 +42,19 @@ struct TreeMapView: View {
                         isHovered: hoverIndex == index
                     )
                     .onTapGesture {
-                        onSelectCategory(data[index].category)
+                        withAnimation(.bouncy) {
+                            onSelectCategory(data[index].category)
+                        }
                     }
                     .onHover { hovering in
-                        hoverIndex = hovering ? index : nil
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            hoverIndex = hovering ? index : nil
+                        }
                     }
                 }
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
+            .padding(8)
         }
         .aspectRatio(16/9, contentMode: .fit)
     }
@@ -65,9 +75,16 @@ struct TreeMapCell: View {
                 .fill(color.opacity(0.6))
                 .overlay(
                     Rectangle()
-                        .stroke(Color.white, lineWidth: isSelected || isHovered ? 3 : 1)
+                        .fill(.ultraThinMaterial)
+                        .opacity(isSelected || isHovered ? 0.9 : 0.3)
+                        .glassEffect(.regular)
                 )
-                .shadow(color: .black.opacity(isSelected || isHovered ? 0.2 : 0), radius: 5)
+                .overlay(
+                    Rectangle()
+                        .stroke(Color.white.opacity(0.8), lineWidth: isSelected || isHovered ? 3 : 1)
+                        .shadow(color: color.opacity(0.6), radius: isSelected || isHovered ? 8 : 0)
+                )
+                .shadow(color: .black.opacity(isSelected || isHovered ? 0.3 : 0.1), radius: isSelected || isHovered ? 15 : 5, x: 0, y: isSelected || isHovered ? 8 : 2)
             
             if rect.width > 80 && rect.height > 60 {
                 VStack(alignment: .leading, spacing: 4) {
@@ -75,24 +92,36 @@ struct TreeMapCell: View {
                         .font(.system(size: min(16, rect.width / 10)))
                         .fontWeight(.bold)
                         .lineLimit(1)
+                        .foregroundStyle(.primary)
+                        .shadow(color: .white.opacity(0.8), radius: 1)
                     
                     Text(size)
                         .font(.system(size: min(14, rect.width / 12)))
                         .lineLimit(1)
+                        .foregroundStyle(.primary)
                     
-                    Text(percentage)
-                        .font(.system(size: min(12, rect.width / 14)))
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
+                    HStack {
+                        Text(percentage)
+                            .font(.system(size: min(12, rect.width / 14)))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(.regularMaterial)
+                            .glassEffect(.regular, in: Capsule())
+                        
+                        Spacer()
+                    }
                 }
                 .padding(8)
             }
         }
         .position(x: rect.midX, y: rect.midY)
         .frame(width: rect.width, height: rect.height)
-        .scaleEffect(isSelected || isHovered ? 1.02 : 1.0)
+        .scaleEffect(isSelected || isHovered ? 1.05 : 1.0)
         .zIndex(isSelected || isHovered ? 1 : 0)
-        .animation(.spring(response: 0.3), value: isSelected || isHovered)
+        .animation(.bouncy(duration: 0.4), value: isSelected || isHovered)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 8))
     }
 }
 

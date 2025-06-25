@@ -7,8 +7,7 @@
 
 import SwiftUI
 
-// Import StorageModels for StorageCategoryData
-@_exported import class Foundation.ByteCountFormatter
+// PieChartView implementation
 
 @available(macOS 11.0, *)
 
@@ -31,42 +30,84 @@ struct PieChartView: View {
                             endAngle: .degrees(endAngle(for: index))
                         )
                         .fill(sliceColor(at: index))
-                        .scaleEffect(isActive(at: index) ? 1.05 : 1.0)
-                        .shadow(color: .black.opacity(isActive(at: index) ? 0.1 : 0), radius: 5)
-                        .animation(.spring(response: 0.3), value: isActive(at: index))
+                        .overlay(
+                            // Liquid glass overlay for active slices
+                            PieSlice(
+                                startAngle: .degrees(startAngle(for: index)),
+                                endAngle: .degrees(endAngle(for: index))
+                            )
+                            .fill(.ultraThinMaterial)
+                            .opacity(isActive(at: index) ? 0.8 : 0)
+                            .glassEffect(.regular)
+                        )
+                        .scaleEffect(isActive(at: index) ? 1.08 : 1.0)
+                        .shadow(
+                            color: isActive(at: index) ? data[index].color.opacity(0.4) : .clear,
+                            radius: isActive(at: index) ? 15 : 0,
+                            x: 0,
+                            y: isActive(at: index) ? 8 : 0
+                        )
+                        .animation(.bouncy(duration: 0.4), value: isActive(at: index))
                         .onTapGesture {
-                            onSelectCategory(data[index].category)
+                            withAnimation(.bouncy) {
+                                onSelectCategory(data[index].category)
+                            }
                         }
                         .onHover { hovering in
-                            hoverIndex = hovering ? index : nil
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                hoverIndex = hovering ? index : nil
+                            }
                         }
                     }
                 }
                 .frame(width: min(geometry.size.width, geometry.size.height) * 0.8,
                        height: min(geometry.size.width, geometry.size.height) * 0.8)
                 
-                // Center circle (white space)
+                // Liquid Glass Center Circle
                 Circle()
-                    .fill(Color(.windowBackgroundColor))
+                    .fill(.ultraThinMaterial)
+                    .glassEffect(.prominent, in: Circle())
+                    .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
                     .frame(width: min(geometry.size.width, geometry.size.height) * 0.4)
                 
-                // Selected category info
+                // Liquid Glass Selected Category Info
                 if let selectedCategory = selectedCategory,
                    let selectedIndex = data.firstIndex(where: { $0.category == selectedCategory }) {
-                    VStack(spacing: 4) {
-                        Text(data[selectedIndex].category)
-                            .font(.headline)
-                            .fontWeight(.bold)
+                    VStack(spacing: 8) {
+                        // Category indicator with glass effect
+                        HStack(spacing: 8) {
+                            Circle()
+                                .fill(data[selectedIndex].color)
+                                .frame(width: 12, height: 12)
+                                .shadow(color: data[selectedIndex].color, radius: 6)
+                            
+                            Text(data[selectedIndex].category)
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.primary)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(.ultraThinMaterial)
+                        .glassEffect(.regular, in: Capsule())
                         
                         Text(data[selectedIndex].formattedSize)
-                            .font(.subheadline)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.primary)
                         
                         Text(data[selectedIndex].formattedPercentage)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(.regularMaterial)
+                            .glassEffect(.regular, in: Capsule())
                     }
                     .frame(width: min(geometry.size.width, geometry.size.height) * 0.35)
                     .multilineTextAlignment(.center)
+                    .scaleEffect(1.1)
+                    .animation(.bouncy, value: selectedCategory)
                 }
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
@@ -89,14 +130,14 @@ struct PieChartView: View {
     }
     
     private func startAngle(for index: Int) -> Double {
-        let preceedingRatios = data.prefix(index).map { $0.percentage }
-        let ratio = preceedingRatios.reduce(0.0, +)
+        let precedingRatios = data.prefix(index).map { $0.percentage }
+        let ratio = precedingRatios.reduce(0.0, +)
         return ratio * 360.0
     }
     
     private func endAngle(for index: Int) -> Double {
-        let preceedingRatios = data.prefix(index + 1).map { $0.percentage }
-        let ratio = preceedingRatios.reduce(0.0, +)
+        let precedingRatios = data.prefix(index + 1).map { $0.percentage }
+        let ratio = precedingRatios.reduce(0.0, +)
         return ratio * 360.0
     }
 }

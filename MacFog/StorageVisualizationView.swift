@@ -21,15 +21,16 @@ struct StorageVisualizationView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Toolbar
+            // Liquid Glass Toolbar
             HStack {
                 Text("DiskOptimizer Pro")
                     .font(.title)
                     .fontWeight(.bold)
+                    .foregroundStyle(.primary)
                 
                 Spacer()
                 
-                // Visualization type picker
+                // Liquid Glass Visualization Picker
                 Picker("Visualization", selection: $visualizationType) {
                     Image(systemName: "circle.hexagongrid.fill")
                         .tag(VisualizationType.pieChart)
@@ -42,21 +43,29 @@ struct StorageVisualizationView: View {
                 }
                 .pickerStyle(.segmented)
                 .frame(width: 150)
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 8))
                 
+                // Liquid Glass Scan Button
                 Button(action: {
                     storageManager.startScan()
                 }) {
                     HStack {
                         Image(systemName: "arrow.clockwise")
+                            .symbolEffect(.rotate, isActive: storageManager.isScanning)
                         Text("Scan Storage")
                     }
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
                 }
-                .buttonStyle(.borderedProminent)
+                .glassEffect(.regular, in: Capsule(), interactive: true)
                 .disabled(storageManager.isScanning)
+                .scaleEffect(storageManager.isScanning ? 0.95 : 1.0)
+                .animation(.bouncy, value: storageManager.isScanning)
             }
             .padding()
-            .background(Color(.windowBackgroundColor).opacity(0.8))
+            .background(.ultraThinMaterial)
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+            .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
             
             ZStack {
                 // Main content
@@ -68,23 +77,36 @@ struct StorageVisualizationView: View {
                             .padding(.top)
                     }
                     
-                    // Progress bar during scanning
+                    // Liquid Glass Progress Container
                     if storageManager.isScanning {
-                        VStack {
+                        VStack(spacing: 16) {
                             ProgressView(value: storageManager.scanProgress)
                                 .progressViewStyle(.linear)
-                                .padding()
+                                .tint(.cyan)
+                                .scaleEffect(y: 2)
+                                .padding(.horizontal)
                             
                             Text("Scanning storage...")
-                                .foregroundColor(.secondary)
+                                .font(.headline)
+                                .foregroundStyle(.secondary)
+                            
+                            Text("\(Int(storageManager.scanProgress * 100))% Complete")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
                             
                             Button("Cancel") {
                                 storageManager.cancelScan()
                             }
-                            .padding()
+                            .glassEffect(.regular, in: Capsule(), interactive: true)
+                            .padding(.top, 8)
                         }
+                        .padding(24)
+                        .background(.regularMaterial)
+                        .glassEffect(.prominent, in: RoundedRectangle(cornerRadius: 20))
+                        .shadow(color: .cyan.opacity(0.3), radius: 20, x: 0, y: 10)
                         .frame(maxWidth: 400)
-                        .padding()
+                        .scaleEffect(1.05)
+                        .animation(.bouncy, value: storageManager.scanProgress)
                     } else if storageManager.totalSize > 0 {
                         // Visualization
                         Group {
@@ -140,114 +162,173 @@ struct StorageVisualizationView: View {
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         
-                        // Category details and actions
+                        // Liquid Glass Category Details Panel
                         if let selectedCategory = selectedCategory,
                            let selectedData = storageManager.categoryData.first(where: { $0.category == selectedCategory }) {
                             
-                            VStack(alignment: .leading, spacing: 16) {
+                            VStack(alignment: .leading, spacing: 20) {
+                                // Category Header with Liquid Glass
                                 HStack {
+                                    Circle()
+                                        .fill(selectedData.color)
+                                        .frame(width: 16, height: 16)
+                                        .shadow(color: selectedData.color, radius: 4)
+                                    
                                     Text(selectedData.category)
-                                        .font(.headline)
+                                        .font(.title2)
+                                        .fontWeight(.semibold)
                                     
                                     Spacer()
                                     
-                                    Text(selectedData.formattedSize)
-                                        .font(.subheadline)
-                                    
-                                    Text(selectedData.formattedPercentage)
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
+                                    VStack(alignment: .trailing, spacing: 4) {
+                                        Text(selectedData.formattedSize)
+                                            .font(.headline)
+                                            .foregroundStyle(.primary)
+                                        
+                                        Text(selectedData.formattedPercentage)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 2)
+                                            .background(.ultraThinMaterial)
+                                            .glassEffect(.regular, in: Capsule())
+                                    }
                                 }
                                 
-                                // Different actions depending on category
-                                HStack {
+                                // Action Buttons with Liquid Glass
+                                HStack(spacing: 12) {
                                     switch selectedData.category {
                                     case "System":
                                         SafetyIndicator(level: .protected)
                                         Text("System files are protected and cannot be modified")
-                                            .foregroundColor(.secondary)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
                                         
                                     case "Caches":
                                         Button("Clean Caches") {
-                                            // This would be implemented in future phases
+                                            // Implementation placeholder
                                         }
-                                        .buttonStyle(.borderedProminent)
+                                        .glassEffect(.prominent, in: Capsule(), interactive: true)
+                                        .tint(.green)
                                         
                                     case "Applications":
                                         Button("View Large Apps") {
-                                            // This would be implemented in future phases
+                                            // Implementation placeholder
                                         }
-                                        .buttonStyle(.bordered)
+                                        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12), interactive: true)
                                         
                                     case "Duplicates":
                                         Button("Find Duplicates") {
-                                            // This would be implemented in future phases
+                                            // Implementation placeholder
                                         }
-                                        .buttonStyle(.borderedProminent)
+                                        .glassEffect(.prominent, in: Capsule(), interactive: true)
+                                        .tint(.orange)
                                         
                                     default:
                                         Button("Analyze") {
-                                            // This would be implemented in future phases
+                                            // Implementation placeholder
                                         }
-                                        .buttonStyle(.bordered)
+                                        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12), interactive: true)
                                     }
                                     
                                     Spacer()
                                 }
                             }
-                            .padding()
-                            .background(Color(.windowBackgroundColor).opacity(0.8))
+                            .padding(20)
+                            .background(.regularMaterial)
+                            .glassEffect(.prominent, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 10)
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .bottom).combined(with: .opacity),
+                                removal: .move(edge: .bottom).combined(with: .opacity)
+                            ))
                         }
                     } else {
-                        // Initial state or no data
-                        VStack(spacing: 20) {
-                            Image(systemName: "externaldrive.fill")
-                                .font(.system(size: 80))
-                                .foregroundColor(.accentColor.opacity(0.8))
-                            
-                            Text("DiskOptimizer Pro")
-                                .font(.title)
-                                .fontWeight(.bold)
-                            
-                            Text("Click 'Scan Storage' to analyze your disk")
-                                .foregroundColor(.secondary)
+                        // Liquid Glass Welcome State
+                        VStack(spacing: 32) {
+                            VStack(spacing: 16) {
+                                Image(systemName: "externaldrive.fill")
+                                    .font(.system(size: 80))
+                                    .foregroundStyle(.cyan)
+                                    .symbolEffect(.pulse, options: .repeat(.continuous))
+                                    .shadow(color: .cyan.opacity(0.5), radius: 20)
+                                
+                                Text("DiskOptimizer Pro")
+                                    .font(.largeTitle)
+                                    .fontWeight(.bold)
+                                    .foregroundStyle(.primary)
+                                
+                                Text("Unleash the power of Liquid Glass storage visualization")
+                                    .font(.title3)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .padding(32)
+                            .background(.ultraThinMaterial)
+                            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                            .shadow(color: .cyan.opacity(0.2), radius: 30, x: 0, y: 15)
                             
                             Button(action: {
                                 storageManager.startScan()
                             }) {
-                                HStack {
+                                HStack(spacing: 12) {
                                     Image(systemName: "arrow.clockwise")
-                                    Text("Scan Storage")
+                                        .font(.title2)
+                                    Text("Begin Analysis")
+                                        .font(.title2)
+                                        .fontWeight(.semibold)
                                 }
-                                .padding()
+                                .padding(.horizontal, 24)
+                                .padding(.vertical, 16)
                             }
-                            .buttonStyle(.borderedProminent)
+                            .glassEffect(.prominent, in: Capsule(), interactive: true)
+                            .tint(.cyan)
                             .controlSize(.large)
-                            .padding(.top)
+                            .shadow(color: .cyan.opacity(0.3), radius: 15, x: 0, y: 8)
+                            .scaleEffect(1.1)
                         }
-                        .padding()
+                        .padding(40)
                     }
                 }
                 
-                // Error message
+                // Liquid Glass Error Panel
                 if let errorMessage = storageManager.errorMessage {
-                    VStack {
-                        Text("Error: \(errorMessage)")
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.red.opacity(0.8))
-                            )
+                    VStack(spacing: 16) {
+                        HStack {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.orange)
+                                .font(.title2)
+                            
+                            Text("Error Occurred")
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+                            
+                            Spacer()
+                        }
+                        
+                        Text(errorMessage)
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.leading)
                         
                         Button("Dismiss") {
-                            storageManager.errorMessage = nil
+                            withAnimation(.bouncy) {
+                                storageManager.errorMessage = nil
+                            }
                         }
-                        .padding(.top, 8)
+                        .glassEffect(.regular, in: Capsule(), interactive: true)
+                        .tint(.orange)
                     }
-                    .padding()
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .padding(20)
+                    .background(.regularMaterial)
+                    .glassEffect(.prominent, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .shadow(color: .orange.opacity(0.3), radius: 20, x: 0, y: 10)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .top).combined(with: .opacity.combined(with: .scale)),
+                        removal: .move(edge: .top).combined(with: .opacity.combined(with: .scale))
+                    ))
                     .zIndex(100)
+                    .padding()
                 }
             }
         }
@@ -256,116 +337,6 @@ struct StorageVisualizationView: View {
 }
 
 // MARK: - Supporting Views
-
-@available(macOS 11.0, *)
-struct PieChartView: View {
-    var data: [StorageCategoryData]
-    var selectedCategory: String?
-    var onSelectCategory: (String) -> Void
-    
-    @State private var hoverIndex: Int?
-    
-    var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                // Pie Chart
-                ZStack {
-                    ForEach(data.indices, id: \.self) { index in
-                        PieSlice(
-                            startAngle: .degrees(startAngle(for: index)),
-                            endAngle: .degrees(endAngle(for: index))
-                        )
-                        .fill(sliceColor(at: index))
-                        .scaleEffect(isActive(at: index) ? 1.05 : 1.0)
-                        .shadow(color: .black.opacity(isActive(at: index) ? 0.1 : 0), radius: 5)
-                        .animation(.spring(response: 0.3), value: isActive(at: index))
-                        .onTapGesture {
-                            onSelectCategory(data[index].category)
-                        }
-                        .onHover { hovering in
-                            hoverIndex = hovering ? index : nil
-                        }
-                    }
-                }
-                .frame(width: min(geometry.size.width, geometry.size.height) * 0.8,
-                       height: min(geometry.size.width, geometry.size.height) * 0.8)
-                
-                // Center circle (white space)
-                Circle()
-                    .fill(Color(.windowBackgroundColor))
-                    .frame(width: min(geometry.size.width, geometry.size.height) * 0.4)
-                
-                // Selected category info
-                if let selectedCategory = selectedCategory,
-                   let selectedIndex = data.firstIndex(where: { $0.category == selectedCategory }) {
-                    VStack(spacing: 4) {
-                        Text(data[selectedIndex].category)
-                            .font(.headline)
-                            .fontWeight(.bold)
-                        
-                        Text(data[selectedIndex].formattedSize)
-                            .font(.subheadline)
-                        
-                        Text(data[selectedIndex].formattedPercentage)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    .frame(width: min(geometry.size.width, geometry.size.height) * 0.35)
-                    .multilineTextAlignment(.center)
-                }
-            }
-            .frame(width: geometry.size.width, height: geometry.size.height)
-        }
-        .aspectRatio(1, contentMode: .fit)
-    }
-    
-    private func isActive(at index: Int) -> Bool {
-        if let selectedCategory = selectedCategory {
-            return data[index].category == selectedCategory
-        }
-        return hoverIndex == index
-    }
-    
-    private func sliceColor(at index: Int) -> Color {
-        if isActive(at: index) {
-            return data[index].color.opacity(0.8)
-        }
-        return data[index].color.opacity(0.6)
-    }
-    
-    private func startAngle(for index: Int) -> Double {
-        let preceedingRatios = data.prefix(index).map { $0.percentage }
-        let ratio = preceedingRatios.reduce(0.0, +)
-        return ratio * 360.0
-    }
-    
-    private func endAngle(for index: Int) -> Double {
-        let preceedingRatios = data.prefix(index + 1).map { $0.percentage }
-        let ratio = preceedingRatios.reduce(0.0, +)
-        return ratio * 360.0
-    }
-}
-
-struct PieSlice: Shape {
-    var startAngle: Angle
-    var endAngle: Angle
-    
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let center = CGPoint(x: rect.midX, y: rect.midY)
-        let radius = min(rect.width, rect.height) / 2
-        
-        path.move(to: center)
-        path.addArc(center: center,
-                    radius: radius,
-                    startAngle: startAngle - .degrees(90),
-                    endAngle: endAngle - .degrees(90),
-                    clockwise: false)
-        path.closeSubpath()
-        
-        return path
-    }
-}
 
 @available(macOS 11.0, *)
 struct TreeMapView: View {

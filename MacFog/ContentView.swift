@@ -7,7 +7,6 @@
 
 import SwiftUI
 import CoreData
-@_exported import struct StorageVisualizationView
 
 struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -15,9 +14,29 @@ struct ContentView: View {
     var body: some View {
         if #available(macOS 11.0, *) {
             StorageVisualizationView()
+                .background(.ultraThinMaterial)
+                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .shadow(color: .black.opacity(0.1), radius: 30, x: 0, y: 15)
         } else {
-            Text("DiskOptimizer Pro requires macOS 11.0 or later")
-                .padding()
+            VStack(spacing: 20) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 48))
+                    .foregroundStyle(.orange)
+                
+                Text("DiskOptimizer Pro requires macOS 11.0 or later")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .multilineTextAlignment(.center)
+                
+                Text("Please upgrade your macOS version to use this application")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(40)
+            .background(.regularMaterial)
+            .glassEffect(.prominent, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .shadow(color: .orange.opacity(0.3), radius: 20, x: 0, y: 10)
         }
     }
 }
