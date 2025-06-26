@@ -10,6 +10,7 @@ import Combine
 import SwiftUI
 
 @available(macOS 11.0, *)
+@MainActor
 class StorageViewModel: ObservableObject {
     private let fileSystemService = FileSystemService()
     private var cancellables = Set<AnyCancellable>()
@@ -90,19 +91,3 @@ class StorageViewModel: ObservableObject {
     }
 }
 
-/// Data structure for storage category visualization
-struct StorageCategoryData: Identifiable {
-    let id: UUID
-    let category: String
-    let size: Int64
-    let percentage: Double
-    let color: Color
-    
-    var formattedSize: String {
-        FileSystemService.formatSize(size)
-    }
-    
-    var formattedPercentage: String {
-        String(format: "%.1f%%", percentage * 100)
-    }
-}

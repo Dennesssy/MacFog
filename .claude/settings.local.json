@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(log show:*)",
-      "WebFetch(domain:developer.apple.com)"
+      "WebFetch(domain:developer.apple.com)",
+      "Bash(xcodebuild:*)"
     ],
     "deny": []
   }

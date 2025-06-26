@@ -254,63 +254,6 @@ struct DashboardView: View {
     }
 }
 
-struct SafetyIndicator: View {
-    enum SafetyLevel {
-        case safe
-        case caution
-        case protected
-    }
-    
-    let level: SafetyLevel
-    
-    var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: icon)
-                .foregroundColor(color)
-            
-            Text(text)
-                .font(.caption)
-                .foregroundColor(color)
-        }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(color.opacity(0.1))
-        .cornerRadius(4)
-    }
-    
-    private var icon: String {
-        switch level {
-        case .safe:
-            return "checkmark.circle.fill"
-        case .caution:
-            return "exclamationmark.triangle.fill"
-        case .protected:
-            return "lock.fill"
-        }
-    }
-    
-    private var color: Color {
-        switch level {
-        case .safe:
-            return .green
-        case .caution:
-            return .yellow
-        case .protected:
-            return .red
-        }
-    }
-    
-    private var text: String {
-        switch level {
-        case .safe:
-            return "Safe to Modify"
-        case .caution:
-            return "Caution"
-        case .protected:
-            return "Protected"
-        }
-    }
-}
 
 #Preview {
     DashboardView()
