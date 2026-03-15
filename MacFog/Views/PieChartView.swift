@@ -38,7 +38,7 @@ struct PieChartView: View {
                             )
                             .fill(.ultraThinMaterial)
                             .opacity(isActive(at: index) ? 0.8 : 0)
-                            .glassEffect(.regular)
+                            .glassEffectConditional()
                         )
                         .scaleEffect(isActive(at: index) ? 1.08 : 1.0)
                         .shadow(
@@ -66,7 +66,7 @@ struct PieChartView: View {
                 // Liquid Glass Center Circle
                 Circle()
                     .fill(.ultraThinMaterial)
-                    .glassEffect(.prominent, in: Circle())
+                    .glassEffectConditional()
                     .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 10)
                     .frame(width: min(geometry.size.width, geometry.size.height) * 0.4)
                 
@@ -89,7 +89,7 @@ struct PieChartView: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
                         .background(.ultraThinMaterial)
-                        .glassEffect(.regular, in: Capsule())
+                        .glassEffectConditional()
                         
                         Text(data[selectedIndex].formattedSize)
                             .font(.title2)
@@ -100,9 +100,9 @@ struct PieChartView: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 10)
-                            .padding(.vertical, 4)
-                            .background(.regularMaterial)
-                            .glassEffect(.regular, in: Capsule())
+                        .padding(.vertical, 4)
+                        .background(.regularMaterial)
+                        .glassEffectConditional()
                     }
                     .frame(width: min(geometry.size.width, geometry.size.height) * 0.35)
                     .multilineTextAlignment(.center)

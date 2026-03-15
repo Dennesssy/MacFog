@@ -43,11 +43,11 @@ struct StorageVisualizationView: View {
                 }
                 .pickerStyle(.segmented)
                 .frame(width: 150)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 8))
+                .glassEffectConditional()
                 
                 // Liquid Glass Scan Button
                 Button(action: {
-                    storageManager.startScan()
+                    storageManager.requestPermissionAndScan()
                 }) {
                     HStack {
                         Image(systemName: "arrow.clockwise")
@@ -57,14 +57,14 @@ struct StorageVisualizationView: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
                 }
-                .glassEffect(.prominent, in: Capsule())
                 .disabled(storageManager.isScanning)
                 .scaleEffect(storageManager.isScanning ? 0.95 : 1.0)
                 .animation(.bouncy, value: storageManager.isScanning)
+                .glassEffectConditional()
             }
             .padding()
             .background(.ultraThinMaterial)
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16))
+            .glassEffectConditional()
             .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
             
             ZStack {
@@ -97,12 +97,12 @@ struct StorageVisualizationView: View {
                             Button("Cancel") {
                                 storageManager.cancelScan()
                             }
-                            .glassEffect(.prominent, in: Capsule())
+                            .glassEffectConditional()
                             .padding(.top, 8)
                         }
                         .padding(24)
                         .background(.regularMaterial)
-                        .glassEffect(.prominent, in: RoundedRectangle(cornerRadius: 20))
+                        .glassEffectConditional()
                         .shadow(color: .cyan.opacity(0.3), radius: 20, x: 0, y: 10)
                         .frame(maxWidth: 400)
                         .scaleEffect(1.05)
@@ -191,7 +191,7 @@ struct StorageVisualizationView: View {
                                             .padding(.horizontal, 8)
                                             .padding(.vertical, 2)
                                             .background(.ultraThinMaterial)
-                                            .glassEffect(.regular, in: Capsule())
+                                            .glassEffectConditional()
                                     }
                                 }
                                 
@@ -208,27 +208,27 @@ struct StorageVisualizationView: View {
                                         Button("Clean Caches") {
                                             // Implementation placeholder
                                         }
-                                        .glassEffect(.prominent, in: Capsule(), )
+                                        .glassEffectConditional()
                                         .tint(.green)
                                         
                                     case "Applications":
                                         Button("View Large Apps") {
                                             // Implementation placeholder
                                         }
-                                        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12), )
+                                        .glassEffectConditional()
                                         
                                     case "Duplicates":
                                         Button("Find Duplicates") {
                                             // Implementation placeholder
                                         }
-                                        .glassEffect(.prominent, in: Capsule(), )
+                                        .glassEffectConditional()
                                         .tint(.orange)
                                         
                                     default:
                                         Button("Analyze") {
                                             // Implementation placeholder
                                         }
-                                        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12), )
+                                        .glassEffectConditional()
                                     }
                                     
                                     Spacer()
@@ -236,7 +236,7 @@ struct StorageVisualizationView: View {
                             }
                             .padding(20)
                             .background(.regularMaterial)
-                            .glassEffect(.prominent, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .glassEffectConditional()
                             .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 10)
                             .transition(.asymmetric(
                                 insertion: .move(edge: .bottom).combined(with: .opacity),
@@ -265,11 +265,11 @@ struct StorageVisualizationView: View {
                             }
                             .padding(32)
                             .background(.ultraThinMaterial)
-                            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                            .glassEffectConditional()
                             .shadow(color: .cyan.opacity(0.2), radius: 30, x: 0, y: 15)
                             
                             Button(action: {
-                                storageManager.startScan()
+                                storageManager.requestPermissionAndScan()
                             }) {
                                 HStack(spacing: 12) {
                                     Image(systemName: "arrow.clockwise")
@@ -281,11 +281,11 @@ struct StorageVisualizationView: View {
                                 .padding(.horizontal, 24)
                                 .padding(.vertical, 16)
                             }
-                            .glassEffect(.prominent, in: Capsule(), )
                             .tint(.cyan)
                             .controlSize(.large)
                             .shadow(color: .cyan.opacity(0.3), radius: 15, x: 0, y: 8)
                             .scaleEffect(1.1)
+                            .glassEffectConditional()
                         }
                         .padding(40)
                     }
@@ -316,12 +316,12 @@ struct StorageVisualizationView: View {
                                 storageManager.errorMessage = nil
                             }
                         }
-                        .glassEffect(.prominent, in: Capsule())
+                        .glassEffectConditional()
                         .tint(.orange)
                     }
                     .padding(20)
                     .background(.regularMaterial)
-                    .glassEffect(.prominent, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .glassEffectConditional()
                     .shadow(color: .orange.opacity(0.3), radius: 20, x: 0, y: 10)
                     .transition(.asymmetric(
                         insertion: .move(edge: .top).combined(with: .opacity.combined(with: .scale)),

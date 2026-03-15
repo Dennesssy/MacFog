@@ -57,8 +57,10 @@ class FileSystemService: ObservableObject {
             // Start a timer to update the progress
             self.progressUpdateTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
                 // Simulate progress for now
-                if self.scanProgress < 0.99 {
-                    self.scanProgress += 0.02
+                DispatchQueue.main.async {
+                    if self.scanProgress < 0.99 {
+                        self.scanProgress += 0.02
+                    }
                 }
             }
         }

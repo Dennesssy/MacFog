@@ -32,7 +32,9 @@ class StorageManager: ObservableObject {
     struct FileStats {
         var system: Int64 = 0
         var applications: Int64 = 0
-        var userDocuments: Int64 = 0
+        var documents: Int64 = 0
+        var downloads: Int64 = 0
+        var desktop: Int64 = 0
         var media: Int64 = 0
         var caches: Int64 = 0
         var duplicates: Int64 = 0
@@ -42,7 +44,9 @@ class StorageManager: ObservableObject {
             [
                 "System": system,
                 "Applications": applications,
-                "User Documents": userDocuments,
+                "Documents": documents,
+                "Downloads": downloads,
+                "Desktop": desktop,
                 "Media": media,
                 "Caches": caches,
                 "Duplicates": duplicates,
@@ -52,19 +56,35 @@ class StorageManager: ObservableObject {
     }
     
     /// Start scanning the file system
-    func startScan() {
+    func startScan(url: URL) {
         Task {
             do {
-                _ = try await scanFileSystem()
+                _ = try await scanFileSystem(url: url)
                 updateCategoryData()
             } catch {
                 self.errorMessage = error.localizedDescription
             }
         }
     }
+
+    func requestPermissionAndScan() {
+        let openPanel = NSOpenPanel()
+        openPanel.canChooseFiles = false
+        openPanel.canChooseDirectories = true
+        openPanel.allowsMultipleSelection = false
+        openPanel.message = "Please select a directory to scan."
+
+        if openPanel.runModal() == .OK {
+            if let url = openPanel.url {
+                startScan(url: url)
+            }
+        } else {
+            errorMessage = "Permission to access the directory was denied."
+        }
+    }
     
     /// Scan the file system for storage information
-    private func scanFileSystem() async throws -> FileStats {
+    private func scanFileSystem(url: URL) async throws -> FileStats {
         guard !isScanning else { 
             throw NSError(domain: "StorageManager", code: 1, 
                          userInfo: [NSLocalizedDescriptionKey: "Scan already in progress"]) 
@@ -75,69 +95,80 @@ class StorageManager: ObservableObject {
         totalSize = 0
         fileStats = FileStats()
         
-        // Start a timer to update the progress
-        progressUpdateTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
-            guard let self = self else { return }
-            // Simulate progress for now
-            if self.scanProgress < 0.99 {
-                self.scanProgress += 0.02
-            }
-        }
-        
-        // Get home directory
         let homeURL = URL(fileURLWithPath: NSHomeDirectory())
         
         var stats = FileStats()
         
-        // Scan Applications
-        let applicationsURL = URL(fileURLWithPath: "/Applications")
-        stats.applications = try await scanDirectory(at: applicationsURL)
-        
-        // Scan User Documents
         let documentsURL = homeURL.appendingPathComponent("Documents")
-        stats.userDocuments = try await scanDirectory(at: documentsURL)
+        stats.documents = try await scanDirectory(at: documentsURL) { progress in
+            DispatchQueue.main.async {
+                self.scanProgress = progress
+            }
+        }
         
-        // Scan Downloads
         let downloadsURL = homeURL.appendingPathComponent("Downloads")
-        stats.userDocuments += try await scanDirectory(at: downloadsURL)
+        stats.downloads = try await scanDirectory(at: downloadsURL) { progress in
+            DispatchQueue.main.async {
+                self.scanProgress = progress
+            }
+        }
         
-        // Scan Desktop 
         let desktopURL = homeURL.appendingPathComponent("Desktop")
-        stats.userDocuments += try await scanDirectory(at: desktopURL)
+        stats.desktop = try await scanDirectory(at: desktopURL) { progress in
+            DispatchQueue.main.async {
+                self.scanProgress = progress
+            }
+        }
         
-        // Scan Media
+        let applicationsURL = URL(fileURLWithPath: "/Applications")
+        stats.applications = try await scanDirectory(at: applicationsURL) { progress in
+            DispatchQueue.main.async {
+                self.scanProgress = progress
+            }
+        }
+        
         let picturesURL = homeURL.appendingPathComponent("Pictures")
         let musicURL = homeURL.appendingPathComponent("Music")
         let moviesURL = homeURL.appendingPathComponent("Movies")
         
-        stats.media += try await scanDirectory(at: picturesURL)
-        stats.media += try await scanDirectory(at: musicURL)
-        stats.media += try await scanDirectory(at: moviesURL)
+        stats.media += try await scanDirectory(at: picturesURL) { progress in
+            DispatchQueue.main.async {
+                self.scanProgress = progress
+            }
+        }
+        stats.media += try await scanDirectory(at: musicURL) { progress in
+            DispatchQueue.main.async {
+                self.scanProgress = progress
+            }
+        }
+        stats.media += try await scanDirectory(at: moviesURL) { progress in
+            DispatchQueue.main.async {
+                self.scanProgress = progress
+            }
+        }
         
-        // Scan Caches
         let libraryURL = homeURL.appendingPathComponent("Library")
         let cachesURL = libraryURL.appendingPathComponent("Caches")
-        stats.caches = try await scanDirectory(at: cachesURL)
+        stats.caches = try await scanDirectory(at: cachesURL) { progress in
+            DispatchQueue.main.async {
+                self.scanProgress = progress
+            }
+        }
         
-        // For the purpose of this demo, set a reasonable value for system files
-        stats.system = 15 * 1024 * 1024 * 1024 // Approximately 15GB for system
+        stats.system = 15 * 1024 * 1024 * 1024
         
-        // Calculate total size
-        let total = stats.system + stats.applications + stats.userDocuments + 
-                    stats.media + stats.caches + stats.duplicates + stats.other
+        let total = stats.system + stats.applications + stats.documents + stats.downloads + stats.desktop + stats.media + stats.caches + stats.duplicates + stats.other
         
-        totalSize = total
-        fileStats = stats
+        self.totalSize = total
+        self.fileStats = stats
         scanProgress = 1.0
-        progressUpdateTimer?.invalidate()
-        progressUpdateTimer = nil
         isScanning = false
         
-        return stats
+        return fileStats
     }
     
     /// Scan a directory and calculate its size
-    private func scanDirectory(at url: URL) async throws -> Int64 {
+    private func scanDirectory(at url: URL, progress: @escaping (Double) -> Void) async throws -> Int64 {
         // Check if directory exists
         var isDirectory: ObjCBool = false
         guard fileManager.fileExists(atPath: url.path, isDirectory: &isDirectory),
@@ -160,7 +191,7 @@ class StorageManager: ObservableObject {
                 
                 if let isDirectory = resourceValues.isDirectory, isDirectory {
                     // Recursively scan subdirectories
-                    totalSize += try await scanDirectory(at: fileURL)
+                    totalSize += try await scanDirectory(at: fileURL, progress: progress)
                 } else if let fileSize = resourceValues.fileSize {
                     totalSize += Int64(fileSize)
                 }
@@ -177,9 +208,6 @@ class StorageManager: ObservableObject {
     /// Cancel an ongoing scan
     func cancelScan() {
         scanTask?.cancel()
-        
-        progressUpdateTimer?.invalidate()
-        progressUpdateTimer = nil
         isScanning = false
     }
     

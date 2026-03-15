@@ -15,7 +15,7 @@ struct ContentView: View {
         if #available(macOS 11.0, *) {
             StorageVisualizationView()
                 .background(.ultraThinMaterial)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .glassEffectConditional()
                 .shadow(color: .black.opacity(0.1), radius: 30, x: 0, y: 15)
         } else {
             VStack(spacing: 20) {
@@ -35,7 +35,7 @@ struct ContentView: View {
             }
             .padding(40)
             .background(.regularMaterial)
-            .glassEffect(.prominent, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .glassEffectConditional()
             .shadow(color: .orange.opacity(0.3), radius: 20, x: 0, y: 10)
         }
     }
@@ -44,3 +44,4 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+wwr

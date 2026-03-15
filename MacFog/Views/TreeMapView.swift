@@ -26,7 +26,7 @@ struct TreeMapView: View {
                 // Liquid Glass Container Background
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(.ultraThinMaterial)
-                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .glassEffectConditional()
                     .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 10)
                 
                 ForEach(data.indices, id: \.self) { index in
@@ -77,7 +77,7 @@ struct TreeMapCell: View {
                     Rectangle()
                         .fill(.ultraThinMaterial)
                         .opacity(isSelected || isHovered ? 0.9 : 0.3)
-                        .glassEffect(.regular)
+                        .glassEffectConditional()
                 )
                 .overlay(
                     Rectangle()
@@ -108,7 +108,7 @@ struct TreeMapCell: View {
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
                             .background(.regularMaterial)
-                            .glassEffect(.regular, in: Capsule())
+                            .glassEffectConditional()
                         
                         Spacer()
                     }
@@ -121,7 +121,7 @@ struct TreeMapCell: View {
         .scaleEffect(isSelected || isHovered ? 1.05 : 1.0)
         .zIndex(isSelected || isHovered ? 1 : 0)
         .animation(.bouncy(duration: 0.4), value: isSelected || isHovered)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 8))
+        .glassEffectConditional()
     }
 }
 
