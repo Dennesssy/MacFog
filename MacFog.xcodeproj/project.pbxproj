@@ -6,19 +6,94 @@
 	objectVersion = 100;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		3113FDBE2F75CE54003C185C /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3113FDBD2F75CE54003C185C /* Quartz.framework */; };
+		3113FDCA2F75CE54003C185C /* ViewFog.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 3113FDBB2F75CE54003C185C /* ViewFog.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXBuildRule section */
+		3113FDB62F752F41003C185C /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			fileType = sourcecode.protobuf;
+			script = (
+				"# <com.apple.compilers.intents>",
+				"",
+			);
+		};
+/* End PBXBuildRule section */
+
+/* Begin PBXContainerItemProxy section */
+		3113FDC82F75CE54003C185C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 318D12772D9F85C70038B54E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3113FDBA2F75CE54003C185C;
+			remoteInfo = ViewFog;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		3113FDCF2F75CE54003C185C /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = "";
+			dstSubfolder = PlugIns;
+			files = (
+				3113FDCA2F75CE54003C185C /* ViewFog.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		3113FDBB2F75CE54003C185C /* ViewFog.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ViewFog.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		3113FDBD2F75CE54003C185C /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
 		318D127F2D9F85C70038B54E /* MacFog.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacFog.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		3113FDB52F752D91003C185C /* Exceptions for "MacFog" folder in "MacFog" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 318D127E2D9F85C70038B54E /* MacFog */;
+		};
+		3113FDCE2F75CE54003C185C /* Exceptions for "ViewFog" folder in "ViewFog" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 3113FDBA2F75CE54003C185C /* ViewFog */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		3113FDBF2F75CE54003C185C /* ViewFog */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				3113FDCE2F75CE54003C185C /* Exceptions for "ViewFog" folder in "ViewFog" target */,
+			);
+			path = ViewFog;
+			sourceTree = "<group>";
+		};
 		318D12812D9F85C70038B54E /* MacFog */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				3113FDB52F752D91003C185C /* Exceptions for "MacFog" folder in "MacFog" target */,
+			);
 			path = MacFog;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		3113FDB82F75CE54003C185C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				3113FDBE2F75CE54003C185C /* Quartz.framework in Frameworks */,
+			);
+		};
 		318D127C2D9F85C70038B54E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
@@ -27,10 +102,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3113FDBC2F75CE54003C185C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3113FDBD2F75CE54003C185C /* Quartz.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		318D12762D9F85C70038B54E = {
 			isa = PBXGroup;
 			children = (
 				318D12812D9F85C70038B54E /* MacFog */,
+				3113FDBF2F75CE54003C185C /* ViewFog */,
+				3113FDBC2F75CE54003C185C /* Frameworks */,
 				318D12802D9F85C70038B54E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -39,6 +124,7 @@
 			isa = PBXGroup;
 			children = (
 				318D127F2D9F85C70038B54E /* MacFog.app */,
+				3113FDBB2F75CE54003C185C /* ViewFog.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -46,6 +132,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		3113FDBA2F75CE54003C185C /* ViewFog */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3113FDCB2F75CE54003C185C /* Build configuration list for PBXNativeTarget "ViewFog" */;
+			buildPhases = (
+				3113FDB72F75CE54003C185C /* Sources */,
+				3113FDB82F75CE54003C185C /* Frameworks */,
+				3113FDB92F75CE54003C185C /* Resources */,
+			);
+			buildRules = (
+			);
+			fileSystemSynchronizedGroups = (
+				3113FDBF2F75CE54003C185C /* ViewFog */,
+			);
+			name = ViewFog;
+			productName = ViewFog;
+			productReference = 3113FDBB2F75CE54003C185C /* ViewFog.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		318D127E2D9F85C70038B54E /* MacFog */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 318D12902D9F85C90038B54E /* Build configuration list for PBXNativeTarget "MacFog" */;
@@ -53,8 +157,13 @@
 				318D127B2D9F85C70038B54E /* Sources */,
 				318D127C2D9F85C70038B54E /* Frameworks */,
 				318D127D2D9F85C70038B54E /* Resources */,
+				3113FDCF2F75CE54003C185C /* Embed Foundation Extensions */,
 			);
 			buildRules = (
+				3113FDB62F752F41003C185C /* PBXBuildRule */,
+			);
+			dependencies = (
+				3113FDC92F75CE54003C185C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				318D12812D9F85C70038B54E /* MacFog */,
@@ -71,9 +180,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1630;
+				LastSwiftUpdateCheck = 2640;
 				LastUpgradeCheck = 2640;
 				TargetAttributes = {
+					3113FDBA2F75CE54003C185C = {
+						CreatedOnToolsVersion = 26.4;
+					};
 					318D127E2D9F85C70038B54E = {
 						CreatedOnToolsVersion = 16.3;
 					};
@@ -94,11 +206,17 @@
 			projectRoot = "";
 			targets = (
 				318D127E2D9F85C70038B54E /* MacFog */,
+				3113FDBA2F75CE54003C185C /* ViewFog */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		3113FDB92F75CE54003C185C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
 		318D127D2D9F85C70038B54E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
@@ -107,6 +225,11 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		3113FDB72F75CE54003C185C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
 		318D127B2D9F85C70038B54E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
@@ -114,7 +237,77 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		3113FDC92F75CE54003C185C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3113FDBA2F75CE54003C185C /* ViewFog */;
+			targetProxy = 3113FDC82F75CE54003C185C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		3113FDCC2F75CE54003C185C /* Debug configuration for PBXNativeTarget "ViewFog" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = N2V5RLPP86;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ViewFog/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ViewFog;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = D.MacFog.ViewFog;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		3113FDCD2F75CE54003C185C /* Release configuration for PBXNativeTarget "ViewFog" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = N2V5RLPP86;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_USER_SELECTED_FILES = readonly;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ViewFog/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ViewFog;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = D.MacFog.ViewFog;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		318D128E2D9F85C90038B54E /* Debug configuration for PBXProject "MacFog" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -178,6 +371,7 @@
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
 			};
 			name = Debug;
 		};
@@ -245,14 +439,28 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MacFog/MacFog.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = N2V5RLPP86;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MacFog/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -265,7 +473,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
@@ -275,14 +483,28 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MacFog/MacFog.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = N2V5RLPP86;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
+				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MacFog/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -295,20 +517,28 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		3113FDCB2F75CE54003C185C /* Build configuration list for PBXNativeTarget "ViewFog" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3113FDCC2F75CE54003C185C /* Debug configuration for PBXNativeTarget "ViewFog" */,
+				3113FDCD2F75CE54003C185C /* Release configuration for PBXNativeTarget "ViewFog" */,
+			);
+			defaultConfigurationName = Debug;
+		};
 		318D127A2D9F85C70038B54E /* Build configuration list for PBXProject "MacFog" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				318D128E2D9F85C90038B54E /* Debug configuration for PBXProject "MacFog" */,
 				318D128F2D9F85C90038B54E /* Release configuration for PBXProject "MacFog" */,
 			);
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		318D12902D9F85C90038B54E /* Build configuration list for PBXNativeTarget "MacFog" */ = {
 			isa = XCConfigurationList;
@@ -316,7 +546,7 @@
 				318D12912D9F85C90038B54E /* Debug configuration for PBXNativeTarget "MacFog" */,
 				318D12922D9F85C90038B54E /* Release configuration for PBXNativeTarget "MacFog" */,
 			);
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 	};

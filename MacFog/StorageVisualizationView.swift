@@ -6,402 +6,491 @@
 //
 
 import SwiftUI
+import Charts
 
-@available(macOS 11.0, *)
+@available(macOS 14.0, *)
 struct StorageVisualizationView: View {
     @StateObject private var storageManager = StorageManager()
-    @State private var selectedCategory: String?
-    @State private var visualizationType: VisualizationType = .pieChart
+    @State private var selectedNavItem: NavigationItem? = .dashboard
+
+    // State for Native Delete Confirmation
+    @State private var showingDeleteConfirmation = false
+    @State private var itemToDelete: String? = nil
     
-    enum VisualizationType {
-        case pieChart
-        case treeMap
-        case list
+    // State for file preview URL
+    @State private var previewURL: URL?
+    
+    enum NavigationItem: String, Hashable, CaseIterable {
+        case dashboard = "System Telemetry"
+        case fileExplorer = "File Explorer"
+        case devCaches = "Dev & Build Caches"
+        case aiModels = "ML Weights & Datasets"
+        
+        var icon: String {
+            switch self {
+            case .dashboard: return "chart.bar.xaxis"
+            case .fileExplorer: return "folder.fill.badge.gearshape"
+            case .devCaches: return "terminal.fill"
+            case .aiModels: return "brain.head.profile"
+            }
+        }
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Liquid Glass Toolbar
-            HStack {
-                Text("DiskOptimizer Pro")
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.primary)
-                
-                Spacer()
-                
-                // Liquid Glass Visualization Picker
-                Picker("Visualization", selection: $visualizationType) {
-                    Image(systemName: "circle.hexagongrid.fill")
-                        .tag(VisualizationType.pieChart)
-                    
-                    Image(systemName: "square.grid.3x3.fill")
-                        .tag(VisualizationType.treeMap)
-                    
-                    Image(systemName: "list.bullet")
-                        .tag(VisualizationType.list)
+        NavigationSplitView {
+            List(NavigationItem.allCases, id: \.self, selection: $selectedNavItem) { item in
+                Label {
+                    Text(item.rawValue)
+                        .font(.system(.body, design: .rounded))
+                } icon: {
+                    Image(systemName: item.icon)
+                        .symbolRenderingMode(.multicolor)
                 }
-                .pickerStyle(.segmented)
-                .frame(width: 150)
-                .glassEffectConditional()
-                
-                // Liquid Glass Scan Button
-                Button(action: {
-                    storageManager.requestPermissionAndScan()
-                }) {
-                    HStack {
-                        Image(systemName: "arrow.clockwise")
-                            .symbolEffect(.rotate, isActive: storageManager.isScanning)
-                        Text("Scan Storage")
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                }
-                .disabled(storageManager.isScanning)
-                .scaleEffect(storageManager.isScanning ? 0.95 : 1.0)
-                .animation(.bouncy, value: storageManager.isScanning)
-                .glassEffectConditional()
             }
-            .padding()
-            .background(.ultraThinMaterial)
-            .glassEffectConditional()
-            .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+            .navigationTitle("DiskOptimizer Pro")
+            .listStyle(.sidebar)
+        } detail: {
+            Group {
+                if storageManager.isScanning {
+                    scanningState
+                } else if storageManager.totalSize > 0 {
+                    detailContent
+                } else {
+                    emptyState
+                }
+            }
+            .navigationTitle(selectedNavItem?.rawValue ?? "DiskOptimizer")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button(action: {
+                        storageManager.requestPermissionAndScan()
+                    }) {
+                        Label(storageManager.isScanning ? "Scanning..." : "Scan Storage", systemImage: "arrow.clockwise")
+                            .symbolEffect(.pulse, isActive: storageManager.isScanning)
+                    }
+                    .disabled(storageManager.isScanning)
+                }
+            }
+        }
+        .frame(minWidth: 950, minHeight: 650)
+        // Native HIG Confirmation Dialog
+        .confirmationDialog(
+            "Are you sure you want to delete \(itemToDelete ?? "these files")?",
+            isPresented: $showingDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
+                // Perform actual deletion here
+                print("Deleted: \(itemToDelete ?? "")")
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("This action will permanently remove the files from your disk and cannot be undone.")
+        }
+    }
+    
+    // MARK: - Detail Content Router
+
+    @ViewBuilder
+    private var detailContent: some View {
+        switch selectedNavItem {
+        case .dashboard:
+            DashboardGridView(
+                storageManager: storageManager,
+                onDeleteRequest: triggerDelete
+            )
+        case .fileExplorer:
+            AccordionFileListView(storageManager: storageManager, previewURL: $previewURL)
+        case .devCaches, .aiModels:
+            OptimizationTargetView(
+                categoryTitle: selectedNavItem?.rawValue ?? "",
+                onDeleteRequest: triggerDelete
+            )
+        case .none:
+            ContentUnavailableView("Select a category", systemImage: "sidebar.left")
+        }
+    }
+    
+    private func triggerDelete(for itemName: String) {
+        itemToDelete = itemName
+        showingDeleteConfirmation = true
+    }
+    
+    // MARK: - States
+    
+    private var emptyState: some View {
+        ContentUnavailableView {
+            Label("Ready to Optimize", systemImage: "cpu.fill")
+                .symbolRenderingMode(.multicolor)
+                .symbolEffect(.bounce, options: .repeating)
+        } description: {
+            Text("Analyze your storage to visualize your disk and reclaim space for new AI models and dev builds.")
+                .font(.system(.body, design: .rounded))
+        } actions: {
+            Button("Initialize Analysis") {
+                storageManager.requestPermissionAndScan()
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .font(.system(.body, design: .monospaced).weight(.semibold))
+        }
+    }
+    
+    private var scanningState: some View {
+        VStack(spacing: 24) {
+            ProgressView(value: storageManager.scanProgress)
+                .progressViewStyle(.linear)
+                .frame(maxWidth: 350)
+                .tint(.blue)
             
-            ZStack {
-                // Main content
-                VStack {
-                    // Total storage info
-                    if storageManager.totalSize > 0 {
-                        Text("Total Storage: \(StorageManager.formatSize(storageManager.totalSize))")
-                            .font(.headline)
-                            .padding(.top)
+            VStack(spacing: 8) {
+                Text("Analyzing File System Matrix...")
+                    .font(.system(.title3, design: .monospaced).weight(.medium))
+                
+                Text("\(Int(storageManager.scanProgress * 100))% Compiled")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+            }
+            
+            Button("Abort Task", role: .cancel) {
+                storageManager.cancelScan()
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+            .font(.system(.body, design: .monospaced))
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(nsColor: .windowBackgroundColor))
+    }
+}
+
+// MARK: - Dashboard Grid with Native Charts
+
+@available(macOS 14.0, *)
+private struct DashboardGridView: View {
+    @ObservedObject var storageManager: StorageManager
+    let onDeleteRequest: (String) -> Void
+    
+    let columns = [
+        GridItem(.adaptive(minimum: 340, maximum: 460), spacing: 20)
+    ]
+    
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                
+                // Header
+                HStack(alignment: .lastTextBaseline) {
+                    Text("System Telemetry")
+                        .font(.system(.title, design: .rounded).weight(.bold))
+                    Spacer()
+                    Text("Utilized Disk: \(StorageManager.formatSize(storageManager.totalSize))")
+                        .font(.system(.title3, design: .monospaced).weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 24)
+                
+                LazyVGrid(columns: columns, spacing: 20) {
+                    
+                    // 1. Pie Chart
+                    DashboardCard(title: "Allocation Graph", icon: "chart.pie.fill", color: .blue) {
+                        Chart(storageManager.categoryData) { item in
+                            SectorMark(
+                                angle: .value("Size", item.size),
+                                innerRadius: .ratio(0.6),
+                                angularInset: 2.0
+                            )
+                            .foregroundStyle(item.color.gradient)
+                            .cornerRadius(6)
+                        }
+                        .chartLegend(position: .trailing, alignment: .center)
+                        .padding(.top, 8)
                     }
                     
-                    // Liquid Glass Progress Container
-                    if storageManager.isScanning {
-                        VStack(spacing: 16) {
-                            ProgressView(value: storageManager.scanProgress)
-                                .progressViewStyle(.linear)
-                                .tint(.cyan)
-                                .scaleEffect(y: 2)
-                                .padding(.horizontal)
-                            
-                            Text("Scanning storage...")
-                                .font(.headline)
-                                .foregroundStyle(.secondary)
-                            
-                            Text("\(Int(storageManager.scanProgress * 100))% Complete")
-                                .font(.caption)
-                                .foregroundStyle(.tertiary)
-                            
-                            Button("Cancel") {
-                                storageManager.cancelScan()
-                            }
-                            .glassEffectConditional()
-                            .padding(.top, 8)
+                    // 2. Bar Chart
+                    DashboardCard(title: "Largest Vectors", icon: "chart.bar.fill", color: .purple) {
+                        Chart(storageManager.categoryData.prefix(5)) { item in
+                            BarMark(
+                                x: .value("Size", item.size),
+                                y: .value("Category", item.category)
+                            )
+                            .foregroundStyle(item.color.gradient)
+                            .cornerRadius(4)
                         }
-                        .padding(24)
-                        .background(.regularMaterial)
-                        .glassEffectConditional()
-                        .shadow(color: .cyan.opacity(0.3), radius: 20, x: 0, y: 10)
-                        .frame(maxWidth: 400)
-                        .scaleEffect(1.05)
-                        .animation(.bouncy, value: storageManager.scanProgress)
-                    } else if storageManager.totalSize > 0 {
-                        // Visualization
-                        Group {
-                            switch visualizationType {
-                            case .pieChart:
-                                PieChartView(
-                                    data: storageManager.categoryData,
-                                    selectedCategory: selectedCategory,
-                                    onSelectCategory: { category in
-                                        selectedCategory = category
-                                    }
-                                )
-                                .padding()
-                                
-                            case .treeMap:
-                                TreeMapView(
-                                    data: storageManager.categoryData,
-                                    selectedCategory: selectedCategory,
-                                    onSelectCategory: { category in
-                                        selectedCategory = category
-                                    }
-                                )
-                                .padding()
-                                
-                            case .list:
-                                List {
-                                    ForEach(storageManager.categoryData) { item in
-                                        HStack {
-                                            Circle()
-                                                .fill(item.color)
-                                                .frame(width: 12, height: 12)
-                                            
-                                            Text(item.category)
-                                            
-                                            Spacer()
-                                            
-                                            Text(item.formattedSize)
-                                                .foregroundColor(.secondary)
-                                            
-                                            Text(item.formattedPercentage)
-                                                .foregroundColor(.secondary)
-                                                .frame(width: 60, alignment: .trailing)
-                                        }
-                                        .contentShape(Rectangle())
-                                        .onTapGesture {
-                                            selectedCategory = item.category
-                                        }
-                                        .background(item.category == selectedCategory ? Color.accentColor.opacity(0.1) : Color.clear)
-                                    }
-                                }
-                                .listStyle(.plain)
-                            }
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        
-                        // Liquid Glass Category Details Panel
-                        if let selectedCategory = selectedCategory,
-                           let selectedData = storageManager.categoryData.first(where: { $0.category == selectedCategory }) {
-                            
-                            VStack(alignment: .leading, spacing: 20) {
-                                // Category Header with Liquid Glass
+                        .chartXAxis(.hidden)
+                        .padding(.top, 8)
+                    }
+                    
+                    // 3. Category Breakdown List
+                    DashboardCard(title: "Raw Data Breakdown", icon: "server.rack", color: .orange) {
+                        List {
+                            ForEach(storageManager.categoryData.prefix(4)) { item in
                                 HStack {
                                     Circle()
-                                        .fill(selectedData.color)
-                                        .frame(width: 16, height: 16)
-                                        .shadow(color: selectedData.color, radius: 4)
-                                    
-                                    Text(selectedData.category)
-                                        .font(.title2)
-                                        .fontWeight(.semibold)
-                                    
+                                        .fill(item.color.gradient)
+                                        .frame(width: 10, height: 10)
+                                    Text(item.category)
+                                        .font(.system(.body, design: .rounded))
                                     Spacer()
-                                    
-                                    VStack(alignment: .trailing, spacing: 4) {
-                                        Text(selectedData.formattedSize)
-                                            .font(.headline)
-                                            .foregroundStyle(.primary)
-                                        
-                                        Text(selectedData.formattedPercentage)
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 2)
-                                            .background(.ultraThinMaterial)
-                                            .glassEffectConditional()
-                                    }
+                                    Text(StorageManager.formatSize(item.size))
+                                        .foregroundStyle(.secondary)
+                                        .monospacedDigit()
                                 }
-                                
-                                // Action Buttons with Liquid Glass
-                                HStack(spacing: 12) {
-                                    switch selectedData.category {
-                                    case "System":
-                                        SafetyIndicator(level: .protected)
-                                        Text("System files are protected and cannot be modified")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                        
-                                    case "Caches":
-                                        Button("Clean Caches") {
-                                            // Implementation placeholder
-                                        }
-                                        .glassEffectConditional()
-                                        .tint(.green)
-                                        
-                                    case "Applications":
-                                        Button("View Large Apps") {
-                                            // Implementation placeholder
-                                        }
-                                        .glassEffectConditional()
-                                        
-                                    case "Duplicates":
-                                        Button("Find Duplicates") {
-                                            // Implementation placeholder
-                                        }
-                                        .glassEffectConditional()
-                                        .tint(.orange)
-                                        
-                                    default:
-                                        Button("Analyze") {
-                                            // Implementation placeholder
-                                        }
-                                        .glassEffectConditional()
-                                    }
-                                    
-                                    Spacer()
-                                }
+                                .padding(.vertical, 4)
                             }
-                            .padding(20)
-                            .background(.regularMaterial)
-                            .glassEffectConditional()
-                            .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 10)
-                            .transition(.asymmetric(
-                                insertion: .move(edge: .bottom).combined(with: .opacity),
-                                removal: .move(edge: .bottom).combined(with: .opacity)
-                            ))
                         }
-                    } else {
-                        // Liquid Glass Welcome State
-                        VStack(spacing: 32) {
-                            VStack(spacing: 16) {
-                                Image(systemName: "externaldrive.fill")
-                                    .font(.system(size: 80))
-                                    .foregroundStyle(.cyan)
-                                    .symbolEffect(.pulse, options: .repeat(.continuous))
-                                    .shadow(color: .cyan.opacity(0.5), radius: 20)
-                                
-                                Text("DiskOptimizer Pro")
-                                    .font(.largeTitle)
-                                    .fontWeight(.bold)
-                                    .foregroundStyle(.primary)
-                                
-                                Text("Unleash the power of Liquid Glass storage visualization")
-                                    .font(.title3)
-                                    .foregroundStyle(.secondary)
-                                    .multilineTextAlignment(.center)
+                        .listStyle(.plain)
+                        .scrollDisabled(true)
+                        .padding(.horizontal, -16)
+                    }
+                    
+                    // 4. Action Center
+                    DashboardCard(title: "Execution Node", icon: "terminal.fill", color: .green) {
+                        VStack(spacing: 12) {
+                            Button { 
+                                onDeleteRequest("Node Modules & Derived Data")
+                            } label: { 
+                                Label("Purge Build Caches", systemImage: "hammer.fill")
+                                    .frame(maxWidth: .infinity)
                             }
-                            .padding(32)
-                            .background(.ultraThinMaterial)
-                            .glassEffectConditional()
-                            .shadow(color: .cyan.opacity(0.2), radius: 30, x: 0, y: 15)
-                            
-                            Button(action: {
-                                storageManager.requestPermissionAndScan()
-                            }) {
-                                HStack(spacing: 12) {
-                                    Image(systemName: "arrow.clockwise")
-                                        .font(.title2)
-                                    Text("Begin Analysis")
-                                        .font(.title2)
-                                        .fontWeight(.semibold)
-                                }
-                                .padding(.horizontal, 24)
-                                .padding(.vertical, 16)
-                            }
-                            .tint(.cyan)
+                            .buttonStyle(.borderedProminent)
+                            .tint(.red)
                             .controlSize(.large)
-                            .shadow(color: .cyan.opacity(0.3), radius: 15, x: 0, y: 8)
-                            .scaleEffect(1.1)
-                            .glassEffectConditional()
+                            
+                            Button { 
+                                onDeleteRequest("Orphaned HuggingFace Models")
+                            } label: { 
+                                Label("Prune Local LLM Weights", systemImage: "brain")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .tint(.orange)
+                            .controlSize(.large)
                         }
-                        .padding(40)
+                        .padding(.top, 16)
                     }
                 }
-                
-                // Liquid Glass Error Panel
-                if let errorMessage = storageManager.errorMessage {
-                    VStack(spacing: 16) {
-                        HStack {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundStyle(.orange)
-                                .font(.title2)
-                            
-                            Text("Error Occurred")
-                                .font(.headline)
-                                .foregroundStyle(.primary)
-                            
-                            Spacer()
-                        }
-                        
-                        Text(errorMessage)
-                            .font(.body)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.leading)
-                        
-                        Button("Dismiss") {
-                            withAnimation(.bouncy) {
-                                storageManager.errorMessage = nil
-                            }
-                        }
-                        .glassEffectConditional()
-                        .tint(.orange)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 32)
+            }
+        }
+        .background(Color(nsColor: .windowBackgroundColor))
+    }
+}
+
+// MARK: - Modern Dashboard Card
+
+@available(macOS 14.0, *)
+private struct DashboardCard<Content: View>: View {
+    let title: String
+    let icon: String
+    let color: Color
+    let content: Content
+    
+    init(title: String, icon: String, color: Color, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.icon = icon
+        self.color = color
+        self.content = content()
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .foregroundStyle(color.gradient)
+                    .font(.title3)
+                Text(title)
+                    .font(.system(.headline, design: .rounded))
+            }
+            .padding(.bottom, 16)
+            
+            content
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .padding(20)
+        .frame(height: 280)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(.quaternary, lineWidth: 0.5)
+        )
+        .shadow(color: .black.opacity(0.1), radius: 10, y: 4)
+    }
+}
+
+// MARK: - Accordion File List (Native Outline)
+
+@available(macOS 14.0, *)
+private struct AccordionFileListView: View {
+    @ObservedObject var storageManager: StorageManager
+    @Binding var previewURL: URL?
+    @State private var selection: String?
+    
+    // Mock file data with actual paths
+    private var mockFiles: [MockFileItem] {
+        [
+            MockFileItem(name: "core_ml_model_v4.mlmodel", size: "2.4 GB", icon: "cube.fill", color: .purple, path: "~/Library/Mobile Documents/com~apple~CloudDocs/core_ml_model_v4.mlmodel"),
+            MockFileItem(name: "xcode_derived_data", size: "14.2 GB", icon: "hammer.fill", color: .blue, path: "~/Library/Developer/Xcode/DerivedData"),
+            MockFileItem(name: "huggingface_cache", size: "8.1 GB", icon: "brain", color: .orange, path: "~/.cache/huggingface"),
+            MockFileItem(name: "npm_cache", size: "1.2 GB", icon: "shippingbox.fill", color: .green, path: "~/.npm")
+        ]
+    }
+
+    var body: some View {
+        List(selection: $selection) {
+            ForEach(storageManager.categoryData, id: \.category) { item in
+                DisclosureGroup {
+                    ForEach(mockFiles) { file in
+                        FileRow(
+                            name: file.name,
+                            size: file.size,
+                            icon: file.icon,
+                            color: file.color,
+                            filePath: file.path,
+                            previewURL: $previewURL
+                        )
                     }
-                    .padding(20)
-                    .background(.regularMaterial)
-                    .glassEffectConditional()
-                    .shadow(color: .orange.opacity(0.3), radius: 20, x: 0, y: 10)
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .top).combined(with: .opacity.combined(with: .scale)),
-                        removal: .move(edge: .top).combined(with: .opacity.combined(with: .scale))
-                    ))
-                    .zIndex(100)
-                    .padding()
+                } label: {
+                    HStack {
+                        Image(systemName: "folder.fill")
+                            .symbolRenderingMode(.multicolor)
+                            .font(.title3)
+
+                        Text(item.category)
+                            .font(.system(.body, design: .rounded).weight(.medium))
+                        Spacer()
+                        Text(StorageManager.formatSize(item.size))
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+                    .padding(.vertical, 4)
                 }
             }
         }
-        .frame(minWidth: 800, minHeight: 600)
+        .listStyle(.sidebar)
+        .alternatingRowBackgrounds()
+        .navigationTitle("File Explorer")
     }
 }
 
-// MARK: - Supporting Views
+private struct MockFileItem: Identifiable {
+    let id = UUID()
+    let name: String
+    let size: String
+    let icon: String
+    let color: Color
+    let path: String
+}
 
+private struct FileRow: View {
+    let name: String
+    let size: String
+    let icon: String
+    let color: Color
+    let filePath: String
+    @Binding var previewURL: URL?
 
-@available(macOS 11.0, *)
-struct SafetyIndicator: View {
-    enum SafetyLevel {
-        case safe
-        case caution
-        case protected
+    var body: some View {
+        HStack {
+            Image(systemName: icon)
+                .foregroundStyle(color.gradient)
+                .frame(width: 20)
+
+            Text(name)
+                .font(.system(.body, design: .monospaced))
+
+            Spacer()
+
+            Text(size)
+                .foregroundStyle(.tertiary)
+                .monospacedDigit()
+        }
+        .padding(.leading, 8)
+        .padding(.vertical, 2)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            // Update previewURL with the file's path on disk
+            let expandedPath = NSString(string: filePath).expandingTildeInPath
+            previewURL = URL(fileURLWithPath: expandedPath)
+        }
     }
-    
-    let level: SafetyLevel
+}
+
+// MARK: - Dedicated Deep Clean View
+
+@available(macOS 14.0, *)
+private struct OptimizationTargetView: View {
+    let categoryTitle: String
+    let onDeleteRequest: (String) -> Void
     
     var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: icon)
-                .foregroundColor(color)
+        Form {
+            Section("Safe to Prune") {
+                CleanTargetRow(
+                    title: "Xcode Derived Data",
+                    size: "14.2 GB",
+                    icon: "hammer.fill",
+                    onDelete: { onDeleteRequest("Xcode Derived Data") }
+                )
+                
+                CleanTargetRow(
+                    title: "Node Modules (Global)",
+                    size: "3.1 GB",
+                    icon: "shippingbox.fill",
+                    onDelete: { onDeleteRequest("Node Modules (Global)") }
+                )
+            }
             
-            Text(text)
-                .font(.caption)
-                .foregroundColor(color)
+            Section("AI & ML Datasets") {
+                CleanTargetRow(
+                    title: "HuggingFace Hub Cache",
+                    size: "22.5 GB",
+                    icon: "brain.head.profile",
+                    onDelete: { onDeleteRequest("HuggingFace Hub Cache") }
+                )
+                
+                CleanTargetRow(
+                    title: "Ollama Local Weights",
+                    size: "18.4 GB",
+                    icon: "server.rack",
+                    onDelete: { onDeleteRequest("Ollama Local Weights") }
+                )
+            }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(color.opacity(0.1))
-        .cornerRadius(4)
-    }
-    
-    private var icon: String {
-        switch level {
-        case .safe:
-            return "checkmark.circle.fill"
-        case .caution:
-            return "exclamationmark.triangle.fill"
-        case .protected:
-            return "lock.fill"
-        }
-    }
-    
-    private var color: Color {
-        switch level {
-        case .safe:
-            return .green
-        case .caution:
-            return .yellow
-        case .protected:
-            return .red
-        }
-    }
-    
-    private var text: String {
-        switch level {
-        case .safe:
-            return "Safe to Modify"
-        case .caution:
-            return "Caution"
-        case .protected:
-            return "Protected"
-        }
+        .formStyle(.grouped)
+        .navigationTitle(categoryTitle)
     }
 }
 
-#Preview {
-    if #available(macOS 11.0, *) {
-        return StorageVisualizationView()
-    } else {
-        return Text("Requires macOS 11.0 or later")
+private struct CleanTargetRow: View {
+    let title: String
+    let size: String
+    let icon: String
+    let onDelete: () -> Void
+    
+    var body: some View {
+        LabeledContent {
+            Button("Purge", role: .destructive, action: onDelete)
+                .buttonStyle(.bordered)
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .symbolRenderingMode(.multicolor)
+                    .font(.title2)
+                    .frame(width: 24)
+                
+                VStack(alignment: .leading) {
+                    Text(title)
+                        .font(.system(.body, design: .rounded))
+                    Text(size)
+                        .font(.system(.caption, design: .monospaced))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.vertical, 4)
+        }
     }
 }

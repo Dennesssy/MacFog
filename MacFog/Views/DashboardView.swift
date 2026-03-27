@@ -11,13 +11,13 @@ struct DashboardView: View {
     @StateObject private var viewModel = StorageViewModel()
     @State private var selectedCategory: String?
     @State private var visualizationType: VisualizationType = .pieChart
-    
+
     enum VisualizationType {
         case pieChart
         case treeMap
         case list
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
             // Toolbar
@@ -25,23 +25,23 @@ struct DashboardView: View {
                 Text("DiskOptimizer Pro")
                     .font(.title)
                     .fontWeight(.bold)
-                
+
                 Spacer()
-                
+
                 // Visualization type picker
                 Picker("Visualization", selection: $visualizationType) {
                     Image(systemName: "circle.hexagongrid.fill")
                         .tag(VisualizationType.pieChart)
-                    
+
                     Image(systemName: "square.grid.3x3.fill")
                         .tag(VisualizationType.treeMap)
-                    
+
                     Image(systemName: "list.bullet")
                         .tag(VisualizationType.list)
                 }
                 .pickerStyle(.segmented)
                 .frame(width: 150)
-                
+
                 Button(action: {
                     viewModel.startScan()
                 }) {
@@ -56,7 +56,7 @@ struct DashboardView: View {
             }
             .padding()
             .background(Color(.windowBackgroundColor).opacity(0.8))
-            
+
             ZStack {
                 // Main content
                 VStack {
@@ -66,17 +66,17 @@ struct DashboardView: View {
                             .font(.headline)
                             .padding(.top)
                     }
-                    
+
                     // Progress bar during scanning
                     if viewModel.isScanning {
                         VStack {
                             ProgressView(value: viewModel.scanProgress)
                                 .progressViewStyle(.linear)
                                 .padding()
-                            
+
                             Text("Scanning storage...")
                                 .foregroundColor(.secondary)
-                            
+
                             Button("Cancel") {
                                 viewModel.cancelScan()
                             }
@@ -97,7 +97,7 @@ struct DashboardView: View {
                                     }
                                 )
                                 .padding()
-                                
+
                             case .treeMap:
                                 TreeMapView(
                                     data: viewModel.categoryData,
@@ -107,7 +107,7 @@ struct DashboardView: View {
                                     }
                                 )
                                 .padding()
-                                
+
                             case .list:
                                 List {
                                     ForEach(viewModel.categoryData) { item in
@@ -115,14 +115,14 @@ struct DashboardView: View {
                                             Circle()
                                                 .fill(item.color)
                                                 .frame(width: 12, height: 12)
-                                            
+
                                             Text(item.category)
-                                            
+
                                             Spacer()
-                                            
+
                                             Text(item.formattedSize)
                                                 .foregroundColor(.secondary)
-                                            
+
                                             Text(item.formattedPercentage)
                                                 .foregroundColor(.secondary)
                                                 .frame(width: 60, alignment: .trailing)
@@ -138,26 +138,26 @@ struct DashboardView: View {
                             }
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        
+
                         // Category details and actions
                         if let selectedCategory = selectedCategory,
                            let selectedData = viewModel.categoryData.first(where: { $0.category == selectedCategory }) {
-                            
+
                             VStack(alignment: .leading, spacing: 16) {
                                 HStack {
                                     Text(selectedData.category)
                                         .font(.headline)
-                                    
+
                                     Spacer()
-                                    
+
                                     Text(selectedData.formattedSize)
                                         .font(.subheadline)
-                                    
+
                                     Text(selectedData.formattedPercentage)
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
                                 }
-                                
+
                                 // Different actions depending on category
                                 HStack {
                                     switch selectedData.category {
@@ -165,32 +165,32 @@ struct DashboardView: View {
                                         SafetyIndicator(level: .protected)
                                         Text("System files are protected and cannot be modified")
                                             .foregroundColor(.secondary)
-                                        
+
                                     case "Caches":
                                         Button("Clean Caches") {
                                             // This would be implemented in future phases
                                         }
                                         .buttonStyle(.borderedProminent)
-                                        
+
                                     case "Applications":
                                         Button("View Large Apps") {
                                             // This would be implemented in future phases
                                         }
                                         .buttonStyle(.bordered)
-                                        
+
                                     case "Duplicates":
                                         Button("Find Duplicates") {
                                             // This would be implemented in future phases
                                         }
                                         .buttonStyle(.borderedProminent)
-                                        
+
                                     default:
                                         Button("Analyze") {
                                             // This would be implemented in future phases
                                         }
                                         .buttonStyle(.bordered)
                                     }
-                                    
+
                                     Spacer()
                                 }
                             }
@@ -203,14 +203,14 @@ struct DashboardView: View {
                             Image(systemName: "externaldrive.fill")
                                 .font(.system(size: 80))
                                 .foregroundColor(.accentColor.opacity(0.8))
-                            
+
                             Text("DiskOptimizer Pro")
                                 .font(.title)
                                 .fontWeight(.bold)
-                            
+
                             Text("Click 'Scan Storage' to analyze your disk")
                                 .foregroundColor(.secondary)
-                            
+
                             Button(action: {
                                 viewModel.startScan()
                             }) {
@@ -227,7 +227,7 @@ struct DashboardView: View {
                         .padding()
                     }
                 }
-                
+
                 // Error message
                 if let errorMessage = viewModel.errorMessage {
                     VStack {
@@ -238,7 +238,7 @@ struct DashboardView: View {
                                 RoundedRectangle(cornerRadius: 8)
                                     .fill(Color.red.opacity(0.8))
                             )
-                        
+
                         Button("Dismiss") {
                             viewModel.errorMessage = nil
                         }
@@ -253,7 +253,6 @@ struct DashboardView: View {
         .frame(minWidth: 800, minHeight: 600)
     }
 }
-
 
 #Preview {
     DashboardView()
